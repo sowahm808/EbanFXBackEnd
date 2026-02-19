@@ -4,7 +4,9 @@ import { region, webhookSecret } from './config/env';
 
 export const api = onRequest({ region: region.value(), secrets: [webhookSecret], invoker: 'public' }, app);
 
-if (require.main === module) {
+const isFirebaseManagedRuntime = Boolean(process.env.FUNCTION_TARGET ?? process.env.K_SERVICE);
+
+if (!isFirebaseManagedRuntime) {
   const port = Number(process.env.PORT ?? 3000);
 
   app.listen(port, () => {
