@@ -8,6 +8,7 @@
   "main": "lib/functions.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "postinstall": "npm run build",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "test": "jest --runInBand",
     "serve": "npm run build && firebase emulators:start --only functions",
