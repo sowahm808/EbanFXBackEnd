@@ -1,5 +1,4 @@
 node_modules
-lib
 .firebase
 .env
 coverage
