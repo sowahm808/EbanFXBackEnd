@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+    function isAdmin() { return signedIn() && request.auth.token.role in ['admin', 'compliance']; }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create, update: if isOwner(uid);
+      allow delete: if false;
+    }
+
+    match /kycSubmissions/{id} {
+      allow read: if signedIn();
+      allow write: if false; // backend-only for submission/review integrity
+    }
+
+    match /beneficiaries/{id} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+      allow write: if false; // backend-only for AML validation and audit logging
+    }
+
+    match /quotes/{id} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+      allow write: if false;
+    }
+
+    match /paymentOrders/{id} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid || isAdmin();
+      allow write: if false; // status transitions only via backend
+    }
+
+    match /ledgerEntries/{id} {
+      allow read: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    match /auditLogs/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
