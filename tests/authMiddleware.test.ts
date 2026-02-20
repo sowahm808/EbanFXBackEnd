@@ -23,4 +23,22 @@ describe('auth middleware', () => {
     expect(next).toHaveBeenCalled();
     expect(req.user.uid).toBe('abc');
   });
+
+  it('accepts lowercase bearer scheme', async () => {
+    const req: any = { headers: { authorization: 'bearer ok' } };
+    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const next = jest.fn();
+    await requireAuth(req, res, next);
+    expect(next).toHaveBeenCalled();
+    expect(req.user.uid).toBe('abc');
+  });
+
+  it('accepts token from cookie', async () => {
+    const req: any = { headers: { cookie: '__session=ok' } };
+    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const next = jest.fn();
+    await requireAuth(req, res, next);
+    expect(next).toHaveBeenCalled();
+    expect(req.user.uid).toBe('abc');
+  });
 });
