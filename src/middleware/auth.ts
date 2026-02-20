@@ -12,6 +12,13 @@ const getTokenFromAuthorizationHeader = (authorization?: string): string | undef
   return token;
 };
 
+const getTokenFromHeaderValue = (value?: string | string[]): string | undefined => {
+  const headerValue = Array.isArray(value) ? value[0] : value;
+  if (!headerValue) return undefined;
+
+  return getTokenFromAuthorizationHeader(headerValue) || headerValue.trim();
+};
+
 const getTokenFromCookieHeader = (cookieHeader?: string): string | undefined => {
   if (!cookieHeader) return undefined;
 
@@ -37,7 +44,10 @@ const getTokenFromCookieHeader = (cookieHeader?: string): string | undefined => 
 export const requireAuth = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const token =
-      getTokenFromAuthorizationHeader(req.headers.authorization) || getTokenFromCookieHeader(req.headers.cookie);
+      getTokenFromAuthorizationHeader(req.headers.authorization) ||
+      getTokenFromHeaderValue(req.headers['x-firebase-auth']) ||
+      getTokenFromHeaderValue(req.headers['x-access-token']) ||
+      getTokenFromCookieHeader(req.headers.cookie);
 
     if (!token) return res.status(401).json({ error: 'Missing token' });
 
