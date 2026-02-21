@@ -85,8 +85,8 @@ export const requireAuth = async (req: AuthenticatedRequest, res: Response, next
       getTokenFromHeaderValue(req.headers['x-id-token']) ||
       getTokenFromHeaderValue(req.headers['id-token']) ||
       getTokenFromCookieHeader(req.headers.cookie) ||
-      getTokenFromQueryValue(req.query?.token) ||
-      getTokenFromQueryValue(req.query?.idToken);
+      getTokenFromQueryValue(req.query.token) ||
+      getTokenFromQueryValue(req.query.idToken);
 
     if (!token) return res.status(401).json({ error: 'Missing token' });
 
