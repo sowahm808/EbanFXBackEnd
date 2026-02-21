@@ -34,6 +34,34 @@ describe('auth middleware', () => {
   });
 
 
+
+  it('accepts raw token in authorization header', async () => {
+    const req: any = { headers: { authorization: 'ok' } };
+    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const next = jest.fn();
+    await requireAuth(req, res, next);
+    expect(next).toHaveBeenCalled();
+    expect(req.user.uid).toBe('abc');
+  });
+
+  it('accepts token from x-id-token header', async () => {
+    const req: any = { headers: { 'x-id-token': 'ok' } };
+    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const next = jest.fn();
+    await requireAuth(req, res, next);
+    expect(next).toHaveBeenCalled();
+    expect(req.user.uid).toBe('abc');
+  });
+
+  it('accepts token from id-token header', async () => {
+    const req: any = { headers: { 'id-token': 'ok' } };
+    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const next = jest.fn();
+    await requireAuth(req, res, next);
+    expect(next).toHaveBeenCalled();
+    expect(req.user.uid).toBe('abc');
+  });
+
   it('accepts token from x-firebase-auth header', async () => {
     const req: any = { headers: { 'x-firebase-auth': 'ok' } };
     const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };

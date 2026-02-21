@@ -52,8 +52,11 @@ export const requireAuth = async (req: AuthenticatedRequest, res: Response, next
   try {
     const token =
       getTokenFromAuthorizationHeader(req.headers.authorization) ||
+      getTokenFromHeaderValue(req.headers.authorization) ||
       getTokenFromHeaderValue(req.headers['x-firebase-auth']) ||
       getTokenFromHeaderValue(req.headers['x-access-token']) ||
+      getTokenFromHeaderValue(req.headers['x-id-token']) ||
+      getTokenFromHeaderValue(req.headers['id-token']) ||
       getTokenFromCookieHeader(req.headers.cookie);
 
     if (!token) return res.status(401).json({ error: 'Missing token' });
