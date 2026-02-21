@@ -26,6 +26,12 @@ const getTokenFromHeaderValue = (value?: string | string[]): string | undefined 
   return normalizeToken(headerValue);
 };
 
+const getTokenFromQueryValue = (value: unknown): string | undefined => {
+  if (typeof value === 'string') return normalizeToken(value);
+  if (Array.isArray(value)) return getTokenFromQueryValue(value[0]);
+  return undefined;
+};
+
 const getTokenFromCookieHeader = (cookieHeader?: string): string | undefined => {
   if (!cookieHeader) return undefined;
 
@@ -55,9 +61,12 @@ export const requireAuth = async (req: AuthenticatedRequest, res: Response, next
       getTokenFromHeaderValue(req.headers.authorization) ||
       getTokenFromHeaderValue(req.headers['x-firebase-auth']) ||
       getTokenFromHeaderValue(req.headers['x-access-token']) ||
+      getTokenFromHeaderValue(req.headers['x-auth-token']) ||
       getTokenFromHeaderValue(req.headers['x-id-token']) ||
       getTokenFromHeaderValue(req.headers['id-token']) ||
-      getTokenFromCookieHeader(req.headers.cookie);
+      getTokenFromCookieHeader(req.headers.cookie) ||
+      getTokenFromQueryValue(req.query.token) ||
+      getTokenFromQueryValue(req.query.idToken);
 
     if (!token) return res.status(401).json({ error: 'Missing token' });
 
