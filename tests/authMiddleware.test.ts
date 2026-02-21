@@ -106,4 +106,58 @@ describe('auth middleware', () => {
     expect(next).toHaveBeenCalled();
     expect(req.user.uid).toBe('abc');
   });
+
+  it('accepts Firebase authorization scheme', async () => {
+    const req: any = { headers: { authorization: 'Firebase ok' }, query: {} };
+    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const next = jest.fn();
+    await requireAuth(req, res, next);
+    expect(next).toHaveBeenCalled();
+    expect(req.user.uid).toBe('abc');
+  });
+
+  it('accepts url-encoded bearer token in authorization header', async () => {
+    const req: any = { headers: { authorization: 'Bearer%20ok' }, query: {} };
+    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const next = jest.fn();
+    await requireAuth(req, res, next);
+    expect(next).toHaveBeenCalled();
+    expect(req.user.uid).toBe('abc');
+  });
+
+  it('rejects undefined token literals', async () => {
+    const req: any = { headers: { authorization: 'Bearer undefined' }, query: {} };
+    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const next = jest.fn();
+    await requireAuth(req, res, next);
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(401);
+  });
+
+  it('accepts token from x-auth-token header', async () => {
+    const req: any = { headers: { 'x-auth-token': 'ok' }, query: {} };
+    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const next = jest.fn();
+    await requireAuth(req, res, next);
+    expect(next).toHaveBeenCalled();
+    expect(req.user.uid).toBe('abc');
+  });
+
+  it('accepts token from query string', async () => {
+    const req: any = { headers: {}, query: { token: 'ok' } };
+    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const next = jest.fn();
+    await requireAuth(req, res, next);
+    expect(next).toHaveBeenCalled();
+    expect(req.user.uid).toBe('abc');
+  });
+
+  it('accepts idToken from query string', async () => {
+    const req: any = { headers: {}, query: { idToken: 'Bearer ok' } };
+    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const next = jest.fn();
+    await requireAuth(req, res, next);
+    expect(next).toHaveBeenCalled();
+    expect(req.user.uid).toBe('abc');
+  });
 });
