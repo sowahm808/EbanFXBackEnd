@@ -12,11 +12,18 @@ const getTokenFromAuthorizationHeader = (authorization?: string): string | undef
   return token;
 };
 
+const normalizeToken = (rawToken?: string): string | undefined => {
+  if (!rawToken) return undefined;
+
+  const cleanedToken = rawToken.trim().replace(/^['"]|['"]$/g, '');
+  if (!cleanedToken) return undefined;
+
+  return getTokenFromAuthorizationHeader(cleanedToken) || cleanedToken;
+};
+
 const getTokenFromHeaderValue = (value?: string | string[]): string | undefined => {
   const headerValue = Array.isArray(value) ? value[0] : value;
-  if (!headerValue) return undefined;
-
-  return getTokenFromAuthorizationHeader(headerValue) || headerValue.trim();
+  return normalizeToken(headerValue);
 };
 
 const getTokenFromCookieHeader = (cookieHeader?: string): string | undefined => {
@@ -26,15 +33,15 @@ const getTokenFromCookieHeader = (cookieHeader?: string): string | undefined => 
   for (const cookie of cookies) {
     const [rawName, ...rawValueParts] = cookie.trim().split('=');
     if (!rawName || rawValueParts.length === 0) continue;
-    if (!['__session', 'idToken', 'token'].includes(rawName)) continue;
+    if (!['__session', 'idToken', 'token', 'accessToken', 'authToken'].includes(rawName)) continue;
 
     const value = rawValueParts.join('=').trim();
     if (!value) continue;
 
     try {
-      return decodeURIComponent(value);
+      return normalizeToken(decodeURIComponent(value));
     } catch {
-      return value;
+      return normalizeToken(value);
     }
   }
 
