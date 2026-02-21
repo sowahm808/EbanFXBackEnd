@@ -106,4 +106,31 @@ describe('auth middleware', () => {
     expect(next).toHaveBeenCalled();
     expect(req.user.uid).toBe('abc');
   });
+
+  it('accepts token from x-auth-token header', async () => {
+    const req: any = { headers: { 'x-auth-token': 'ok' }, query: {} };
+    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const next = jest.fn();
+    await requireAuth(req, res, next);
+    expect(next).toHaveBeenCalled();
+    expect(req.user.uid).toBe('abc');
+  });
+
+  it('accepts token from query string', async () => {
+    const req: any = { headers: {}, query: { token: 'ok' } };
+    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const next = jest.fn();
+    await requireAuth(req, res, next);
+    expect(next).toHaveBeenCalled();
+    expect(req.user.uid).toBe('abc');
+  });
+
+  it('accepts idToken from query string', async () => {
+    const req: any = { headers: {}, query: { idToken: 'Bearer ok' } };
+    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const next = jest.fn();
+    await requireAuth(req, res, next);
+    expect(next).toHaveBeenCalled();
+    expect(req.user.uid).toBe('abc');
+  });
 });
