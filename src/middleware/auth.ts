@@ -5,20 +5,40 @@ export interface AuthenticatedRequest extends Request {
   user?: { uid: string; role?: string; email?: string };
 }
 
+const looksLikeJwt = (value: string): boolean => value.split('.').length === 3;
+
 const getTokenFromAuthorizationHeader = (authorization?: string): string | undefined => {
   if (!authorization) return undefined;
   const [scheme, token] = authorization.trim().split(/\s+/, 2);
-  if (!scheme || !token || scheme.toLowerCase() !== 'bearer') return undefined;
-  return token;
+  if (!scheme || !token) return undefined;
+
+  const normalizedScheme = scheme.toLowerCase();
+  if (normalizedScheme === 'bearer' || normalizedScheme === 'firebase') {
+    if (token === 'undefined' || token === 'null') return undefined;
+    return token;
+  }
+
+  return looksLikeJwt(token) ? token : undefined;
 };
 
 const normalizeToken = (rawToken?: string): string | undefined => {
   if (!rawToken) return undefined;
 
   const cleanedToken = rawToken.trim().replace(/^['"]|['"]$/g, '');
-  if (!cleanedToken) return undefined;
+  if (!cleanedToken || cleanedToken === 'undefined' || cleanedToken === 'null') return undefined;
 
-  return getTokenFromAuthorizationHeader(cleanedToken) || cleanedToken;
+  try {
+    const maybeEncoded = cleanedToken.includes('%') ? decodeURIComponent(cleanedToken) : cleanedToken;
+    const parsedAuthorizationToken = getTokenFromAuthorizationHeader(maybeEncoded);
+    if (parsedAuthorizationToken) return parsedAuthorizationToken;
+    if (maybeEncoded.includes(' ')) return undefined;
+    return maybeEncoded;
+  } catch {
+    const parsedAuthorizationToken = getTokenFromAuthorizationHeader(cleanedToken);
+    if (parsedAuthorizationToken) return parsedAuthorizationToken;
+    if (cleanedToken.includes(' ')) return undefined;
+    return cleanedToken;
+  }
 };
 
 const getTokenFromHeaderValue = (value?: string | string[]): string | undefined => {
