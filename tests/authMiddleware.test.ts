@@ -60,4 +60,22 @@ describe('auth middleware', () => {
     expect(next).toHaveBeenCalled();
     expect(req.user.uid).toBe('abc');
   });
+
+  it('accepts bearer-prefixed token from cookie', async () => {
+    const req: any = { headers: { cookie: '__session=Bearer%20ok' } };
+    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const next = jest.fn();
+    await requireAuth(req, res, next);
+    expect(next).toHaveBeenCalled();
+    expect(req.user.uid).toBe('abc');
+  });
+
+  it('accepts quoted bearer token from x-access-token header', async () => {
+    const req: any = { headers: { 'x-access-token': '"Bearer ok"' } };
+    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const next = jest.fn();
+    await requireAuth(req, res, next);
+    expect(next).toHaveBeenCalled();
+    expect(req.user.uid).toBe('abc');
+  });
 });
