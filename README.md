@@ -31,6 +31,9 @@ Compliance-first backend for Ghana-origin cross-border payments with KYC gating,
    firebase use <project-id>
    firebase functions:secrets:set WEBHOOK_SECRET
    ```
+   For local runs outside Firebase infrastructure, use one of these auth methods:
+   - Preferred: `gcloud auth application-default login` (ADC)
+   - Or set `FIREBASE_SERVICE_ACCOUNT_JSON` with the full service account JSON string (never commit this value).
 3. Configure pricing/rate docs in Firestore:
    - `config/pricing`: `{ flatFeeGhs, percentFeeBps }`
    - `fxRates/<dateKey>`: `{ midRate, spreadBps, effectiveFrom, effectiveTo, base:'USD', quote:'GHS' }`
@@ -63,3 +66,9 @@ OpenAPI docs available at `/docs`.
 - Cloud Functions v2 HTTP deployment uses `onRequest` from `firebase-functions/v2/https`.
 
 (References: Firebase Admin SDK setup docs and Cloud Functions v2 HTTP docs.)
+
+## Security note for service-account keys
+If a raw private key is ever shared in chat, docs, or source control, treat it as compromised:
+1. Revoke/delete that key in Google Cloud IAM immediately.
+2. Create a new key only if absolutely necessary.
+3. Move secrets to Secret Manager / environment variables and never commit them.
